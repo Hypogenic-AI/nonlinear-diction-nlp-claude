@@ -1,0 +1,45 @@
+{
+  "model": "EleutherAI/pythia-2.8b",
+  "probe_layers": [
+    4,
+    8,
+    12,
+    16,
+    20,
+    24,
+    28,
+    31
+  ],
+  "styles": [
+    "joy",
+    "anger",
+    "sadness",
+    "fear",
+    "disgust",
+    "surprise",
+    "love",
+    "gratitude",
+    "admiration",
+    "curiosity",
+    "confusion",
+    "neutral"
+  ],
+  "n_texts_per_style": {
+    "joy": 500,
+    "anger": 500,
+    "sadness": 500,
+    "fear": 488,
+    "disgust": 500,
+    "surprise": 500,
+    "love": 500,
+    "gratitude": 500,
+    "admiration": 500,
+    "curiosity": 500,
+    "confusion": 500,
+    "neutral": 500
+  },
+  "max_len": 128,
+  "seed": 42,
+  "d_model": 2560,
+  "n_layers": 32
+}

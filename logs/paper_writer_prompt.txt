@@ -1,0 +1,948 @@
+You are an academic paper writer. Generate a complete NEURIPS style paper
+based on the experiment results provided.
+
+════════════════════════════════════════════════════════════════════════════════
+                         IMPORTANT: BEFORE YOU START
+════════════════════════════════════════════════════════════════════════════════
+
+Before writing any content, you MUST complete these steps:
+
+1. READ THE SKILL: Review the paper-writer skill at .claude/skills/paper-writer/SKILL.md
+2. READ THE STYLE GUIDE: Study templates/paper_writing/lab_style_guide.md carefully
+3. REVIEW EXAMPLES: Browse paper_examples/ for formatting and language patterns:
+   - Look at sections/1.introduction.tex for language style
+   - Look at tables/*.tex for table formatting
+   - Look at commands/*.tex for macro usage
+4. VERIFY COMMAND TEMPLATES: Command templates (math.tex, general.tex, macros.tex) are pre-copied to paper_draft/commands/
+
+CRITICAL: Reference example papers for FORMATTING and LANGUAGE STYLE only.
+Do NOT copy content, phrasing, or narrative structure from the example papers.
+The examples are in a different research domain - focus only on presentation style.
+
+════════════════════════════════════════════════════════════════════════════════
+                            EXPERIMENT REPORT
+════════════════════════════════════════════════════════════════════════════════
+
+# Non-linear Diction: Research Report
+
+## 1. Executive Summary
+
+**Research question:** Does the model represent any style it &#34;knows&#34; a priori non-linearly, or are all styles linearly encoded? If a style is hard to steer with a linear vector, is it also hard to prompt?
+
+**Key finding:** In Pythia-2.8B, all 11 tested emotional/stylistic dimensions are encoded essentially *linearly* (MLP probes do not outperform linear probes for any style, with non-linearity indices ranging 0.965–1.008). However, linear separability does not predict steering effectiveness: the correlation between linear probe accuracy and steering vector effectiveness (Cohen&#39;s d) is weak and non-significant (r = −0.220, p = 0.52). Crucially, prompting succeeds uniformly for all styles (3.8–4.4/5), even those that are poorly steerable—indicating that prompting accesses style representations through computational pathways that bypass the limitations of single-direction activation addition.
+
+**Practical implications:** For controllable text generation, prompting remains the most reliable and universal method for style control. Steering vectors&#39; effectiveness appears to depend on factors beyond simple linear separability, suggesting that the causal pathways from activation directions to output behavior involve distributed, nonlinear computation even when the *representations* themselves are linear.
+
+## 2. Goal
+
+### Hypothesis
+If there is a particular style for which it is difficult to obtain a steering vector, it may also be difficult to prompt for that style. We tested whether the model represents any style it &#34;knows&#34; a priori non-linearly, or if all styles are represented linearly.
+
+### Sub-hypotheses
+- **H1:** Some styles are encoded more non-linearly than others (MLP probe &gt;&gt; linear probe)
+- **H2:** Styles with higher non-linearity index are harder to steer with linear vectors
+- **H3:** Styles that are hard to steer are NOT necessarily hard to prompt
+- **H4:** Simple binary styles are linearly encoded; complex/compositional styles are more non-linear
+- **Null:** All styles are linearly represented, and steering difficulty correlates with prompting difficulty
+
+### Importance
+Steering vectors are increasingly used for AI safety (alignment via representation engineering). If some behavioral/stylistic dimensions resist linear steering while remaining promptable, this has direct implications for the completeness of linear intervention methods. Understanding the geometry of style representations informs both theoretical interpretability research and practical controllability.
+
+## 3. Data Construction
+
+### Dataset Description
+**GoEmotions** (Google Research, 2020): 54K Reddit comments annotated for 27 emotion categories plus neutral. We used the HuggingFace `datasets` library version, pre-downloaded locally.
+
+**Filtering criteria:**
+- Single-label examples only (for clean signal)
+- Up to 500 examples per emotion category
+- Minimum 150 examples required for inclusion
+
+### Styles Tested (11 + neutral)
+
+| Style | N samples | Expected Difficulty |
+|-------|-----------|-------------------|
+| joy | 500 | Easy (known to steer well) |
+| anger | 500 | Easy |
+| sadness | 500 | Medium |
+| fear | 488 | Medium |
+| disgust | 500 | Hard (Konen et al. 2024: AUC 0.51) |
+| surprise | 500 | Hard (Konen et al. 2024: few successful vectors) |
+| love | 500 | Medium |
+| gratitude | 500 | Medium |
+| admiration | 500 | Unknown |
+| curiosity | 500 | Unknown |
+| confusion | 500 | Unknown |
+| neutral | 500 | Baseline/reference |
+
+### Example Samples
+| Text | Label |
+|------|-------|
+| &#34;My favourite food is anything I didn&#39;t have to cook myself.&#34; | neutral |
+| &#34;WHY THE FUCK IS BAYLESS ISOING&#34; | anger |
+| &#34;Yes I heard abt the f bombs! That has to be why. Thanks for your reply:)&#34; | gratitude |
+
+### Preprocessing
+1. Filtered to single-label examples (excluded multi-label)
+2. Truncated to max 128 tokens for activation collection
+3. Used padding with attention masks for batch processing
+
+## 4. Experiment Description
+
+### Methodology
+
+#### High-Level Approach
+Three parallel experiments measuring different facets of style representation:
+1. **Probing**: Does the model represent each style linearly? (Linear vs MLP probes)
+2. **Steering**: Can we causally shift output toward each style with a linear vector? (CAA)
+3. **Prompting**: Can the model produce each style via natural language instruction? (GPT-4.1-nano)
+
+#### Why This Method?
+- Probing is the standard way to test the Linear Representation Hypothesis (Park et al., 2023)
+- Contrastive Activation Addition (CAA) is the most common steering approach (Turner et al., 2023; Rimsky et al., 2024)
+- Prompting is the strongest baseline per AxBench (Wu et al., 2025)
+- Comparing all three on the same style taxonomy is novel (Gap #2 in literature)
+
+### Implementation Details
+
+#### Tools and Libraries
+| Library | Version | Purpose |
+|---------|---------|---------|
+| PyTorch | 2.10.0+cu128 | GPU computation |
+| TransformerLens | 2.17.0 | Model hooking and activation caching |
+| scikit-learn | 1.8.0 | Probes and evaluation |
+| OpenAI API | gpt-4.1-nano | Prompting experiments |
+| matplotlib/seaborn | latest | Visualization |
+
+#### Model: Pythia-2.8B (EleutherAI)
+- 32 transformer layers, d_model = 2560
+- Non-gated, well-supported by TransformerLens
+- Intermediate size (larger than toy models, small enough for fast iteration)
+
+#### Hardware
+- 4× NVIDIA RTX A6000 (49 GB each)
+- Used single GPU (cuda:0) for all experiments
+
+#### Hyperparameters
+
+| Parameter | Value | Justification |
+|-----------|-------|---------------|
+| Probe layers | [4, 8, 12, 16, 20, 24, 28, 31] | Cover early/mid/late layers |
+| Linear probe C | 1.0 | Default regularization |
+| MLP probe architecture | (256, 128) hidden | Standard 2-layer MLP |
+| MLP early stopping | 15% validation | Prevent overfitting |
+| CV folds | 5 | Standard for medium datasets |
+| Steering alpha | 3.0 | Moderate intervention strength |
+| Generation temperature | 0.7 | Balance diversity/coherence |
+| Random seed | 42 | Reproducibility |
+
+### Experimental Protocol
+
+#### Experiment 1: Probing (Linear vs MLP)
+For each style × layer:
+1. Collect mean-pooled residual stream activations for style and neutral texts
+2. Balance classes (equal n per class)
+3. Train logistic regression (linear probe) and 2-layer MLP with 5-fold CV
+4. Record accuracy, AUC, and non-linearity index (MLP_acc / linear_acc)
+
+#### Experiment 2: Steering Vectors
+For each style:
+1. Compute steering vector: mean(style_acts) − mean(neutral_acts) at best probing layer
+2. Measure activation-space metrics: Cohen&#39;s d, SV classification accuracy, cosine separation
+3. Generate text with steering vector added to residual stream (alpha=3.0)
+4. Classify generated text using a logistic regression trained on original activations
+5. Measure shift in style classification rate
+
+#### Experiment 3: Prompting
+For each style:
+1. Prompt GPT-4.1-nano: &#34;Write in a [style] tone. Continue: [prompt]&#34; for 10 prompts
+2. Use GPT-4.1-nano as judge: rate style adherence (1–5 scale)
+3. Check specificity: judge against a random other style
+4. Generate baseline (no style instruction) for comparison
+
+#### Control: Random Vectors
+Steer with random vectors of same norm as real steering vectors to confirm specificity.
+
+### Raw Results
+
+#### Probing Results (Best Layer per Style)
+
+| Style | Layer | Linear | MLP | NL Index | Δ (MLP−Lin) |
+|-------|-------|--------|-----|----------|-------------|
+| joy | 4 | 0.872 | 0.855 | 0.981 | −0.017 |
+| anger | 12 | 0.826 | 0.828 | 1.002 | +0.002 |
+| sadness | 4 | 0.856 | 0.826 | 0.965 | −0.030 |
+| fear | 4 | 0.900 | 0.881 | 0.980 | −0.018 |
+| disgust | 4 | 0.847 | 0.827 | 0.976 | −0.020 |
+| surprise | 8 | 0.892 | 0.895 | 1.003 | +0.003 |
+| love | 4 | 0.939 | 0.934 | 0.995 | −0.005 |
+| gratitude | 16 | 0.970 | 0.954 | 0.984 | −0.016 |
+| admiration | 8 | 0.872 | 0.874 | 1.002 | +0.002 |
+| curiosity | 20 | 0.831 | 0.838 | 1.008 | +0.007 |
+| confusion | 12 | 0.807 | 0.809 | 1.002 | +0.002 |
+
+#### Steering Results
+
+| Style | Cohen&#39;s d | SV Accuracy | Baseline Rate | Steered Rate | Shift |
+|-------|-----------|-------------|---------------|--------------|-------|
+| joy | 0.634 | 0.620 | 0.333 | 0.600 | +0.267 |
+| anger | 0.129 | 0.504 | 0.133 | 0.400 | +0.267 |
+| sadness | 0.907 | 0.673 | 0.333 | 0.267 | −0.067 |
+| fear | 0.090 | 0.499 | 0.400 | 0.800 | +0.400 |
+| disgust | 0.129 | 0.510 | 0.400 | 0.533 | +0.133 |
+| surprise | 0.163 | 0.539 | 0.467 | 0.400 | −0.067 |
+| love | 0.147 | 0.512 | 0.200 | 0.533 | +0.333 |
+| gratitude | 0.381 | 0.569 | 0.067 | 0.800 | +0.733 |
+| admiration | 0.192 | 0.534 | 0.600 | 0.533 | −0.067 |
+| curiosity | 0.525 | 0.604 | 0.200 | 0.333 | +0.133 |
+| confusion | 0.455 | 0.587 | 0.333 | 0.600 | +0.267 |
+
+#### Prompting Results (GPT-4.1-nano)
+
+| Style | Target Score (1–5) | Success Rate (≥3) | Specificity |
+|-------|-------------------|-------------------|-------------|
+| joy | 4.40 | 100% | +3.30 |
+| anger | 4.00 | 100% | +2.40 |
+| sadness | 4.00 | 100% | +1.80 |
+| fear | 4.00 | 100% | +1.50 |
+| disgust | 4.40 | 100% | +0.70 |
+| surprise | 4.10 | 100% | +1.90 |
+| love | 4.00 | 100% | +3.00 |
+| gratitude | 4.40 | 100% | +2.20 |
+| admiration | 4.00 | 100% | +3.00 |
+| curiosity | 3.90 | 100% | +0.70 |
+| confusion | 3.80 | 100% | +1.80 |
+
+#### Random Vector Control
+| Style | Random Projection Diff |
+|-------|----------------------|
+| joy | −0.023 |
+| anger | −0.241 |
+| sadness | −0.028 |
+
+Random vectors show negligible or negative style projection, confirming steering vector specificity.
+
+### Visualizations
+
+Key plots are saved in `results/plots/`:
+- `01_linear_vs_mlp_probes.png`: Side-by-side bar chart of linear vs MLP accuracy
+- `02_layerwise_heatmap.png`: Probing accuracy across all layers
+- `03_nonlinearity_index.png`: NL index per style (all ≈ 1.0)
+- `04_prompting_results.png`: Prompting success and specificity
+- `05_linearity_vs_prompting.png`: Scatter: linear separability vs prompting
+- `06_steering_effectiveness.png`: Cohen&#39;s d and SV accuracy per style
+- `07_steering_vs_prompting.png`: Core hypothesis test scatter plot
+- `08_triple_comparison.png`: Three-way bubble chart
+- `09_comprehensive_heatmap.png`: All metrics overview
+
+## 5. Result Analysis
+
+### Key Findings
+
+**Finding 1: All styles are linearly represented (H1 REJECTED)**
+Non-linearity indices range from 0.965 to 1.008, with a mean of 0.991. The MLP probe does not outperform the linear probe for *any* style at any layer. This means Pythia-2.8B represents all 11 tested emotions/styles as linear directions in activation space, not non-linearly.
+
+**Finding 2: Linear separability varies substantially across styles**
+Despite being all linear, some styles are more strongly linearly separable than others. Gratitude (0.970) and love (0.939) have the highest probe accuracy, while confusion (0.807) and anger (0.826) have the lowest. This 0.16-point range reflects genuine differences in how distinctly the model encodes each style.
+
+**Finding 3: Steering effectiveness is NOT predicted by linear separability (H2 PARTIALLY REJECTED)**
+The correlation between linear probe accuracy and steering Cohen&#39;s d is r = −0.220 (p = 0.52)—weak and non-significant. Notably, sadness has the 3rd highest steering d (0.907) despite only moderate linear separability (0.856), while love has very high separability (0.939) but very low steering d (0.147). Linear separability is necessary but not sufficient for effective steering.
+
+**Finding 4: Prompting succeeds uniformly regardless of steering difficulty (H3 SUPPORTED)**
+Prompting achieves ≥3.8/5 and 100% success rate for all styles, including those that steer poorly (disgust: d=0.129, prompt=4.4/5; fear: d=0.090, prompt=4.0/5). The correlation between steering effectiveness and prompting success is r = −0.018 (p = 0.96)—essentially zero. This is the most striking finding: prompting and steering access fundamentally different pathways to style control.
+
+**Finding 5: No evidence for non-linearity in well-known styles (NULL HYPOTHESIS PARTIALLY SUPPORTED)**
+For representation geometry, the null hypothesis holds: all tested styles have NL index ≈ 1.0. However, the null hypothesis *fails* for the behavioral link between steering and prompting: they are uncorrelated, meaning style *access* involves non-linear computation even when style *representation* is linear.
+
+### Statistical Tests
+
+| Correlation | Pearson r | p-value | Significant? |
+|-------------|----------|---------|-------------|
+| Linear acc ↔ Prompt score | 0.447 | 0.168 | No |
+| Linear acc ↔ Prompt specificity | 0.359 | 0.278 | No |
+| NL index ↔ Prompt score | −0.515 | 0.105 | No |
+| Cohen&#39;s d ↔ Linear acc | −0.220 | 0.516 | No |
+| Cohen&#39;s d ↔ Prompt score | −0.018 | 0.957 | No |
+| SV accuracy ↔ Prompt score | −0.029 | 0.932 | No |
+
+**Key interpretation:** None of the expected correlations are statistically significant. This is itself a finding: the three measures (linear separability, steerability, promptability) are largely *independent* dimensions.
+
+### Surprises and Insights
+
+1. **Fear has the lowest steering d (0.090) but the highest generation shift (+0.400).** This paradox suggests that even weak steering vectors can cause large behavioral shifts when they happen to align with sensitive decision boundaries.
+
+2. **Gratitude shows the largest steering shift (+0.733) with only moderate d (0.381).** This confirms that the relationship between activation-space metrics and behavioral effects is nonlinear.
+
+3. **Sadness steers *negatively* (−0.067 shift) despite having the highest Cohen&#39;s d (0.907).** The mean-difference vector points in a direction that is linearly separable but not causally effective for generation. This is a clear example of the &#34;detection ≠ control&#34; gap identified by AxBench (Wu et al., 2025).
+
+4. **Disgust, historically the hardest to steer (Konen et al., 2024), prompts perfectly (4.4/5 with highest absolute score!).** This directly answers the user&#39;s question: no, prompting difficulty does NOT follow steering difficulty.
+
+### Error Analysis
+
+**Steering failure modes:**
+- Negative shifts (sadness, surprise, admiration): Steering vector points in a direction that is detectably different from neutral but does not causally produce the target style during generation
+- Low Cohen&#39;s d (fear: 0.090, anger: 0.129, disgust: 0.129): Style activations overlap heavily with neutral in the mean-difference direction
+- High variance: With only 15 test prompts, individual generation results are noisy
+
+**Prompting limitations:**
+- All prompting used GPT-4.1-nano (not the same model as Pythia-2.8B), so we&#39;re comparing *representation* properties of one model with *prompting* behavior of another
+- Prompting scores reflect a judge&#39;s assessment, not ground truth
+
+### Limitations
+
+1. **Model mismatch:** Probing and steering used Pythia-2.8B; prompting used GPT-4.1-nano. Ideally we&#39;d prompt the same model, but Pythia-2.8B is a base model with poor instruction following.
+
+2. **Small generation sample size:** Only 15 test prompts for steering measurement introduces substantial variance.
+
+3. **GoEmotions as style proxy:** Emotion labels from Reddit comments are noisy proxies for &#34;style.&#34; True literary style (irony, noir, stream-of-consciousness) would be a stronger test but lacks standard labeled datasets.
+
+4. **Single model:** Results are for Pythia-2.8B only. Larger models or instruction-tuned models may show different patterns.
+
+5. **Binary probing:** We tested style-vs-neutral, not style-vs-all-other-styles. Multi-class probing might reveal different patterns.
+
+6. **Mean-pooling:** We averaged activations across sequence positions. Position-specific probing might reveal non-linear structure.
+
+## 6. Conclusions
+
+### Summary
+In Pythia-2.8B, all 11 tested emotional styles are represented **linearly** in activation space (NL index ≈ 1.0 for all). However, the linear representation hypothesis is not the whole story: **steerability** (whether a linear intervention causally shifts output) is largely independent of both **linear separability** (whether the representation can be detected linearly) and **promptability** (whether the model can produce the style via instruction). Styles that are hard to steer (disgust, fear) are *not* hard to prompt — prompting achieves near-perfect success for all styles.
+
+### Direct Answer to the User&#39;s Question
+&gt; &#34;If there&#39;s a particular style that it&#39;s hard to get a steering vector for, does that also mean it will be hard to prompt?&#34;
+
+**No.** Prompting difficulty and steering difficulty are uncorrelated (r = −0.018). Disgust, which historically fails at steering (Konen et al., 2024; AUC = 0.51), achieves the highest prompting score (4.4/5).
+
+&gt; &#34;Does the model represent any style it &#39;knows&#39; a priori non-linearly, or are they all linear?&#34;
+
+For the 11 emotions tested in Pythia-2.8B, **all are linear** at the representation level. However, &#34;representation is linear&#34; ≠ &#34;intervention is linear.&#34; The process by which the model *uses* these representations to generate styled text appears to involve nonlinear computation that prompting can access but simple activation addition cannot.
+
+### Implications
+
+**For AI safety/alignment:** Linear representation-based interventions (steering vectors, SAE features) may systematically miss styles/behaviors that are linearly represented but causally accessed through nonlinear pathways. Prompting remains the most reliable style control method, consistent with AxBench findings.
+
+**For interpretability:** The detection-control gap (style is linearly detectable but not linearly steerable) suggests that the model&#39;s read-out mechanism for style is not simply a linear function of activation directions. Understanding this gap is a key challenge.
+
+**For the Linear Representation Hypothesis:** Our results support the LRH for *detection* (all styles are linearly separable) but challenge the assumption that linear detection implies linear *intervention effectiveness*. The LRH should be considered a statement about representation geometry, not about causal mechanisms.
+
+### Confidence in Findings
+- **High confidence:** All styles are linearly represented (consistent results across layers, styles, and both probes)
+- **Medium confidence:** Steering and prompting are uncorrelated (limited by 11 styles and noisy steering measurement)
+- **Lower confidence:** Generalization to other models and more complex styles
+
+## 7. Next Steps
+
+### Immediate Follow-ups
+1. **Test on instruction-tuned models** (Llama-3-8B-Instruct) where both steering and prompting can use the same model
+2. **Expand style taxonomy** beyond emotions: irony, formality, verbosity, literary genres, and adversarial styles (ending every sentence with 🥕)
+3. **Increase steering sample size** to 100+ prompts for more reliable effect estimates
+4. **Multi-class probing** (all styles simultaneously) to test whether styles interfere with each other
+
+### Alternative Approaches
+- **Trained steering vectors** (gradient-optimized) rather than mean-difference vectors
+- **Layer-specific interventions** (steer at different layers to find optimal injection point)
+- **Activation patching** to identify which components causally contribute to style
+
+### Broader Extensions
+- Test whether the detection-control gap extends to safety-relevant behaviors (sycophancy, deception)
+- Investigate whether scaling (larger models) closes or widens the gap
+- Explore non-linear steering methods (e.g., using pyvene&#39;s DAS) for styles where linear steering fails
+
+### Open Questions
+1. Why does sadness have high linear separability and high Cohen&#39;s d but negative steering shift?
+2. Is the detection-control gap a fundamental architectural property of transformers, or is it specific to certain styles/models?
+3. Would online-constructed styles (like &#34;end every sentence with 🥕&#34;) show different representation geometry than a priori known styles?
+
+## 8. References
+
+1. Park, Choe, Veitch (2023). The Linear Representation Hypothesis and the Geometry of Large Language Models. arXiv:2311.03658
+2. Turner et al. (2023). Steering Language Models With Activation Engineering. arXiv:2308.10248
+3. Konen, Jentzsch et al. (2024). Style Vectors for Steering Generative Large Language Models. arXiv:2402.01618
+4. Csordas, Potts, Manning, Geiger (2024). Non-linear Representations in RNNs. arXiv:2408.10920
+5. Rimsky et al. (2024). Steering Llama 2 via Contrastive Activation Addition. arXiv:2312.06681
+6. Wu et al. (2025). AxBench: Even Simple Baselines Outperform Sparse Autoencoders. arXiv:2501.17148
+7. Elhage et al. (2022). Toy Models of Superposition. arXiv:2209.10652
+8. Jiang et al. (2024). On the Origins of Linear Representations in Large Language Models. arXiv:2403.03867
+9. Demszky et al. (2020). GoEmotions: A Dataset of Fine-Grained Emotions. arXiv:2005.00547
+10. Biderman et al. (2023). Pythia: A Suite for Analyzing Large Language Models. arXiv:2304.01373
+
+
+════════════════════════════════════════════════════════════════════════════════
+                            RESEARCH PLAN
+════════════════════════════════════════════════════════════════════════════════
+
+# Research Plan: Non-linear Diction
+
+## Motivation &amp; Novelty Assessment
+
+### Why This Research Matters
+Steering vectors have become a standard tool for controlling LLM behavior, but they rest on the Linear Representation Hypothesis—that concepts (including styles) correspond to directions in activation space. If some styles are encoded non-linearly, linear steering will systematically fail for them. Understanding which styles resist linear control, and whether this correlates with prompting difficulty, has direct implications for controllable generation, AI safety (alignment via representation engineering), and our theoretical understanding of how LLMs encode linguistic knowledge.
+
+### Gap in Existing Work
+Based on the literature review, three critical gaps exist:
+1. **No systematic study of which styles resist linear steering.** Papers test a handful of styles; none evaluate linearity across a broad style taxonomy.
+2. **No comparison of steering difficulty vs. prompting difficulty.** Our hypothesis specifically links these—if a style can&#39;t be steered, can it be prompted? No paper tests this.
+3. **Non-linear representations studied only in small synthetic settings.** The onion representation paper (Csordas et al., 2024) uses small GRUs. Whether similar non-linear encodings exist for style in large transformers is unexplored.
+
+### Our Novel Contribution
+We conduct the first systematic comparison of:
+- **Linear separability** (linear probe accuracy) vs. **non-linear separability** (MLP probe accuracy) across 10+ styles
+- **Steering vector effectiveness** for each style
+- **Prompting effectiveness** for each style (via real LLM API calls)
+- **The correlation between all three**, testing whether styles that are hard to steer are also hard to prompt, and whether this is predicted by non-linear encoding.
+
+### Experiment Justification
+- **Experiment 1 (Probing):** Measures whether style information is linearly accessible in the model&#39;s activations. The ratio of MLP-to-linear probe accuracy gives a &#34;non-linearity index&#34; for each style. This is the foundational measurement.
+- **Experiment 2 (Steering):** Tests whether linearly-encoded styles can be steered with contrastive activation addition (CAA). If linear probes succeed but steering fails, it suggests the representation is read-only linear but not causally linear.
+- **Experiment 3 (Prompting):** Tests whether the model can produce each style via prompting. If prompting succeeds where steering fails, the model accesses the style through non-linear computation paths.
+- **Experiment 4 (Correlation):** The core hypothesis test—correlating steering difficulty, prompting difficulty, and non-linearity index across styles.
+
+## Research Question
+Does the model represent any style it &#34;knows&#34; a priori non-linearly? Specifically: if a style is difficult to obtain a steering vector for, is it also difficult to prompt for? Or does prompting access non-linear pathways that steering vectors cannot?
+
+## Hypothesis Decomposition
+- **H1:** Some styles are encoded more non-linearly than others (MLP probe &gt;&gt; linear probe).
+- **H2:** Styles with higher non-linearity index are harder to steer with linear vectors.
+- **H3:** Styles that are hard to steer are NOT necessarily hard to prompt (prompting can access non-linear representations).
+- **H4:** Simple binary styles (positive/negative sentiment) are linearly encoded; complex/compositional styles (disgust, irony, formality gradients) are more non-linear.
+- **Null hypothesis:** All styles the model &#34;knows&#34; are linearly represented, and steering difficulty correlates perfectly with prompting difficulty.
+
+## Proposed Methodology
+
+### Approach
+Use Gemma-2-2B (well-supported by TransformerLens, fits easily on our GPUs) to:
+1. Collect activations for texts labeled with different styles from GoEmotions (emotions) and custom style prompts (writing styles)
+2. Train linear and MLP probes on these activations at multiple layers
+3. Extract CAA steering vectors for each style
+4. Measure steering success via a classifier
+5. Measure prompting success via real LLM API calls (GPT-4.1 via OpenRouter)
+6. Correlate all measurements
+
+### Model Choice
+- **Primary:** Gemma-2-2B — fast inference, TransformerLens support, fits on single GPU
+- **Classifier for evaluation:** A separate RoBERTa-based emotion classifier (or GPT-4.1 as judge)
+
+### Styles to Test (10+ categories)
+From GoEmotions (known difficulty spectrum):
+1. Joy (easy — known to work)
+2. Anger (easy)
+3. Sadness (medium)
+4. Fear (medium)
+5. Disgust (hard — known to fail in Konen et al.)
+6. Surprise (hard — known to fail)
+7. Love (medium)
+8. Gratitude (medium)
+
+Custom writing styles:
+9. Formal/academic
+10. Sarcastic/ironic
+11. Poetic/literary
+12. Terse/telegraphic
+
+### Experimental Steps
+1. Load GoEmotions dataset, filter to styles with ≥200 examples each
+2. Load Gemma-2-2B with TransformerLens
+3. Run texts through model, cache activations at layers [4, 8, 12, 16, 20, 24]
+4. For each style × layer: train linear probe and 2-layer MLP probe (5-fold CV)
+5. Compute non-linearity index = MLP_acc / linear_acc for each style
+6. Extract CAA vectors: mean(style_activations) - mean(neutral_activations) at best probing layer
+7. Generate text with and without steering vectors; classify output
+8. Generate text with style prompts via API; classify output
+9. Correlate steering success, prompting success, and non-linearity index
+
+### Baselines
+- **Random vector steering** (control for steering specificity)
+- **Linear probe accuracy** (ceiling for linear methods)
+- **Unsteered generation** (baseline style distribution)
+
+### Evaluation Metrics
+- **Probe accuracy** (linear and MLP, 5-fold CV)
+- **Non-linearity index** = MLP_acc / linear_acc
+- **Steering success rate** = fraction of steered outputs classified as target style
+- **Prompting success rate** = fraction of prompted outputs classified as target style
+- **Pearson/Spearman correlation** between steering difficulty and prompting difficulty
+- **Pearson/Spearman correlation** between non-linearity index and steering difficulty
+
+### Statistical Analysis Plan
+- 5-fold cross-validation for all probe accuracies
+- Bootstrap confidence intervals (1000 resamples) for steering/prompting success rates
+- Pearson and Spearman correlations with p-values for the core hypothesis tests
+- Significance level: α = 0.05
+- Multiple comparison correction: Bonferroni for pairwise style comparisons
+
+## Expected Outcomes
+- **If H1-H3 supported:** Some styles (disgust, surprise, irony) show high non-linearity index, low steering success, but moderate-to-high prompting success → the model encodes these non-linearly and accesses them through non-linear computation.
+- **If null hypothesis supported:** All styles show similar non-linearity indices, and steering/prompting difficulty are perfectly correlated → linear representations suffice for all styles.
+
+## Timeline and Milestones
+1. Planning: 20 min ✓
+2. Environment setup + data preparation: 15 min
+3. Activation collection + probing: 30 min
+4. Steering experiments: 30 min
+5. Prompting experiments: 20 min
+6. Analysis + visualization: 30 min
+7. Documentation: 20 min
+
+## Potential Challenges
+- **GoEmotions label noise:** Multi-label, crowd-sourced → some noise. Mitigate by requiring high-confidence labels.
+- **Gemma-2-2B may not &#34;know&#34; all styles equally well.** Mitigate by including styles we expect to work (sentiment) as positive controls.
+- **Classifier evaluation may not perfectly capture style.** Use multiple evaluation approaches (classifier + LLM-as-judge).
+- **Small sample sizes for rare emotions.** Filter to emotions with ≥200 examples.
+
+## Success Criteria
+1. Successfully measure non-linearity index for ≥8 styles
+2. Successfully measure steering success for ≥8 styles
+3. Successfully measure prompting success for ≥8 styles
+4. Produce a correlation analysis with statistical significance tests
+5. Clear visualization of the relationship between linearity, steerability, and promptability
+
+
+════════════════════════════════════════════════════════════════════════════════
+                          LITERATURE REVIEW
+════════════════════════════════════════════════════════════════════════════════
+
+# Literature Review: Non-linear Diction
+
+## Research Area Overview
+
+This literature review synthesizes research on **steering vectors**, the **linear representation hypothesis (LRH)**, and evidence for **non-linear concept representations** in large language models. The central research question is: *if there is a particular style for which it is difficult to obtain a steering vector, is it also difficult to prompt for that style?* More broadly, we investigate whether all styles known to LLMs are represented linearly, or whether some are encoded non-linearly.
+
+The field of activation engineering has rapidly matured since 2022, with steering vectors becoming a standard tool for controlling LLM behavior at inference time. The dominant assumption — that concepts (including styles) are represented as linear directions in activation space — has been formalized as the Linear Representation Hypothesis. However, recent work reveals systematic exceptions and limitations that are directly relevant to our hypothesis.
+
+---
+
+## Key Papers
+
+### 1. The Linear Representation Hypothesis and the Geometry of Large Language Models
+- **Authors:** Park, Choe, Veitch (U. Chicago)
+- **Year:** 2023 (ICML 2024)
+- **arXiv:** 2311.03658
+- **Key Contribution:** Formalizes three distinct interpretations of the LRH (subspace, measurement, intervention) and proves they are unified under a causal inner product framework.
+- **Methodology:** Counterfactual pair analysis on LLaMA-2-7B. Tests 27 concepts (morphological, semantic, syntactic, cross-lingual) using unembedding/embedding representations.
+- **Key Results:** 26/27 concepts show clear linear structure. **One exception: `thing → part`** (e.g., bus → seats) does not have a linear representation — its alignment histogram is indistinguishable from random.
+- **Relevance:** The framework is inherently linear — concepts encoded non-linearly would simply appear as &#34;not represented.&#34; The sole exception (`thing → part`) is a relational/compositional concept, suggesting complex semantic relationships resist linear encoding. Style, being complex and compositional, may exhibit similar resistance.
+
+### 2. Steering Language Models With Activation Engineering (ActAdd)
+- **Authors:** Turner et al.
+- **Year:** 2023
+- **arXiv:** 2308.10248
+- **Key Contribution:** Introduces Activation Addition (ActAdd) — computing steering vectors from contrastive prompt pairs and adding them to residual stream activations.
+- **Methodology:** Single prompt pair → compute activation difference → add with scaling coefficient at target layer. Tested on GPT-2-XL, GPT-J-6B, LLaMA-1-13B, OPT-6.7B, LLaMA-3-8B.
+- **Styles/Concepts Tested:** Sentiment, topics (weddings, finance, art), toxicity, anger, conspiracy, factual editing.
+- **What Failed:** &#34;Art&#34; topic showed zero steering effect. Compositional rules (goose → AAAAHHHH) produced gibberish. Cross-model transfer was inconsistent. Positive-to-negative sentiment was harder than negative-to-positive.
+- **Evidence for Non-linearity:** Partial dimension experiments showed non-monotonic behavior (adding 1,120/1,600 dimensions produced MORE wedding content than all 1,600). Superposition effects observed (unrelated tokens boosted by steering vectors).
+- **Relevance:** Demonstrates that steering works well for simple binary concepts but degrades for complex, compositional, or abstract targets — directly relevant to our hypothesis about style.
+
+### 3. Style Vectors for Steering Generative Large Language Models
+- **Authors:** Konen, Jentzsch et al. (DLR)
+- **Year:** 2024 (EACL Findings)
+- **arXiv:** 2402.01618
+- **Key Contribution:** Most directly relevant prior work. Tests activation-based and training-based style vectors for sentiment, emotion, and writing style on Alpaca-7B.
+- **Styles Tested:** Positive/negative sentiment (Yelp), 6 Ekman emotions (GoEmotions), Shakespearean/modern writing style.
+- **What Worked:** Positive sentiment, joy, anger, Shakespearean style (at higher λ).
+- **What Failed:**
+  - **Disgust:** Lowest AUC (0.51, near random) with trained vectors; &#34;does not seem to be steered&#34;
+  - **Surprise:** Very few successfully trained vectors; low AUC (0.38-0.39)
+  - **Negative sentiment:** Harder to steer than positive
+  - **Factual prompts:** Resistant to all style steering
+- **Critical Observation:** &#34;More complex styles, such as multidimensional composed styles, present unique challenges when approached through activation engineering&#34; — explicitly acknowledging limits of linear steering for complex styles.
+- **Datasets:** Yelp Review (542K), GoEmotions (58K, 5K used), Shakespeare parallel corpus (18K pairs).
+- **Code:** https://github.com/DLR-SC/style-vectors-for-steering-llms
+
+### 4. Recurrent Neural Networks Learn to Store and Generate Sequences using Non-Linear Representations
+- **Authors:** Csordas, Potts, Manning, Geiger (Stanford)
+- **Year:** 2024
+- **arXiv:** 2408.10920
+- **Key Contribution:** Discovers **&#34;onion representations&#34;** — the first clean empirical counterexample to the Strong LRH.
+- **Mechanism:** In small GRUs, tokens at different positions are stored as the **same direction** at **different magnitudes** (exponential scaling). Decoding requires autoregressive &#34;peeling&#34; — fundamentally non-linear.
+- **Evidence:** Linear probing and DAS completely fail (0-1% accuracy) on small models where onion interventions achieve 83-87%.
+- **Implications for Steering:**
+  - If a concept is encoded via magnitude rather than direction, **linear steering vectors will be ineffective**
+  - SAE-based feature identification likewise assumes linear decomposition
+  - The field&#39;s exclusive reliance on linear methods creates **systematic blind spots**
+  - Compression pressure (many features, small residual stream) drives non-linear solutions — same pressure exists in LLMs
+- **Relevance:** Provides theoretical and empirical basis for our hypothesis. If style features face compression pressure, they may be encoded non-linearly, explaining why some styles resist both steering and prompting.
+
+### 5. Steering Llama 2 via Contrastive Activation Addition (CAA)
+- **Authors:** Rimsky et al.
+- **Year:** 2024 (ACL)
+- **arXiv:** 2312.06681
+- **Key Contribution:** Scales ActAdd by averaging activation differences across many contrastive examples. Tests on Llama 2 Chat (7B, 13B).
+- **Behaviors Tested:** Sycophancy, hallucination, corrigibility, survival instinct, myopia, power-seeking, wealth-seeking.
+- **Results:** Significant behavioral changes with minimal capability reduction. Works on top of RLHF.
+- **Relevance:** Demonstrates linear steering works for behavioral dimensions — but these are high-level binary concepts. Style/diction is more continuous and nuanced.
+
+### 6. Toy Models of Superposition
+- **Authors:** Elhage et al. (Anthropic)
+- **Year:** 2022
+- **arXiv:** 2209.10652
+- **Key Contribution:** Demonstrates that neural networks store more features than dimensions via superposition. Features organize into geometric polytope structures.
+- **Key Results:** Phase diagram governs monosemantic vs. polysemantic neurons. Superposition is driven by feature sparsity and importance. Models can compute while in superposition.
+- **Relevance:** Superposition means features are not cleanly separable — recovering them requires non-linear filtering. If style features are sparse and low-importance relative to content features, they will be heavily superposed and thus harder to isolate linearly.
+
+### 7. On the Origins of Linear Representations in Large Language Models
+- **Authors:** Jiang et al.
+- **Year:** 2024
+- **arXiv:** 2403.03867
+- **Key Contribution:** Provides theoretical explanation for why LLMs develop linear representations — arises from next-token prediction (softmax + cross-entropy) and gradient descent implicit bias.
+- **Limitations of Theory:** Assumes binary concepts with clear contrasts. Non-binary, continuous, or compositional concepts (like style) may not satisfy these conditions.
+- **Relevance:** If the conditions for linearity (binary concepts, independent log-odds) are not met for style, the theory actually **predicts** non-linear representations for complex styles.
+
+### 8. AxBench: Steering LLMs? Even Simple Baselines Outperform Sparse Autoencoders
+- **Authors:** Wu et al. (Stanford NLP)
+- **Year:** 2025
+- **arXiv:** 2501.17148
+- **Key Contribution:** First large-scale benchmark comparing steering methods. Tests on 500 concepts for Gemma-2-2B/9B.
+- **Key Finding:** **Prompting outperforms all representation-based steering methods.** SAEs are not competitive. Diff-in-means best for detection but weak for steering.
+- **Relevance:** If prompting outperforms linear steering, it suggests either (a) prompting accesses representations that linear methods cannot, or (b) the model processes prompts through non-linear pathways. This gap between prompting and linear steering is central to our hypothesis.
+
+### 9. Polysemanticity and Capacity in Neural Networks
+- **Authors:** Scherlis et al.
+- **Year:** 2022
+- **arXiv:** 2210.01892
+- **Key Contribution:** Introduces &#34;feature capacity&#34; — fractional dimension consumed per feature. Less important/sparser features are allocated less capacity and become polysemantic.
+- **Relevance:** Style features, if less important to the training objective than factual content, would be encoded polysemantically — sharing dimensions and resisting clean linear extraction.
+
+### 10. The Geometry of Categorical and Hierarchical Concepts in LLMs
+- **Authors:** Park et al.
+- **Year:** 2024 (ICLR 2025)
+- **arXiv:** 2406.01506
+- **Key Contribution:** Extends LRH to categorical concepts (polytopes) and hierarchical concepts (orthogonal subspaces). Tests on 900+ WordNet concepts.
+- **Relevance:** Even within the &#34;linear&#34; framework, complex concept types require geometric structures beyond simple directions. Style/diction concepts are inherently multi-dimensional and hierarchical (formal/informal subsumes many sub-dimensions like vocabulary, sentence length, register).
+
+### 11. Word Embeddings Are Steers for Language Models
+- **Authors:** Han et al.
+- **Year:** 2023
+- **arXiv:** 2305.12798
+- **Key Contribution:** Shows output embedding transformations (d × d matrix) can steer style. Uses 0.2% of parameters. Transferable and composable.
+- **Relevance:** The need for a full d × d matrix (not just a direction vector) implies style control requires more than a single linear direction — consistent with higher-dimensional or non-linear encoding.
+
+### 12. Improving Steering Vectors by Targeting Sparse Autoencoder Features
+- **Authors:** Chalnev et al.
+- **Year:** 2024
+- **arXiv:** 2411.02193
+- **Key Contribution:** Uses SAEs to measure causal effects of steering vectors and construct targeted vectors.
+- **Key Finding:** Naive linear steering produces unpredictable side effects — a &#34;months&#34; feature causes year digit outputs. Features are entangled in non-linear/compositional ways.
+- **Relevance:** Demonstrates that even with SAE-based feature identification, the relationship between features and outputs is more complex than linear.
+
+---
+
+## Common Methodologies
+
+1. **Contrastive Activation Addition (CAA / ActAdd):** Compute steering vector as mean difference of activations for positive vs. negative examples. Add to residual stream at inference. (Used in papers 2, 3, 5)
+2. **Training-based steering vectors:** Optimize vectors via gradient descent to produce target outputs from a frozen model. (Used in papers 3, 11)
+3. **Linear probing / DAS:** Train linear classifiers or learn rotation matrices to find concept-specific subspaces. (Used in papers 1, 4, 10)
+4. **Sparse Autoencoders (SAEs):** Decompose activations into interpretable, sparse features. (Used in papers 6, 8, 12)
+5. **Embedding transformation:** Apply learned linear transforms to output embeddings. (Used in paper 11)
+
+## Standard Baselines
+
+- **Prompting:** &#34;Write in X style&#34; — consistently competitive, often outperforms representation methods (AxBench)
+- **PPLM (Plug and Play Language Models):** Gradient-based controlled generation
+- **FUDGE:** Controlled generation with future discriminators
+- **Unsteered model:** Baseline for measuring steering effect
+- **Random vectors:** Control for specificity of steering direction
+
+## Evaluation Metrics
+
+| Metric | Purpose | Used In |
+|--------|---------|---------|
+| Probing AUC | Linear separability of concept | Papers 1, 3 |
+| Intervention accuracy | Causal effect of adding steering vector | Papers 1, 4 |
+| Classifier scores (VADER, RoBERTa) | Evaluate style of generated text | Paper 3 |
+| Perspective API | Toxicity of generated text | Paper 2 |
+| Perplexity / fluency | Quality of steered text | Papers 2, 3, 5, 8 |
+| Success rate | Proportion with desired style change | Papers 2, 5 |
+| KL divergence | Distribution shift from steering | Paper 2 |
+| Cosine similarity | Relevance of steered text to target | Paper 2 |
+
+## Datasets in the Literature
+
+| Dataset | Used In | Task |
+|---------|---------|------|
+| Yelp Reviews | Papers 3, 11 | Sentiment transfer |
+| GoEmotions | Paper 3 | Emotion steering |
+| Shakespeare parallel corpus | Paper 3 | Writing style transfer |
+| RealToxicityPrompts | Paper 2 | Toxicity reduction |
+| IMDb | Paper 2 | Sentiment control |
+| OpenWebText | Paper 2 | General generation evaluation |
+| BATS 3.0 | Paper 1 | Morphological/semantic analogies |
+| WordNet | Paper 10 | Categorical/hierarchical concepts |
+| ConceptNet (LAMA) | Paper 2 | Knowledge preservation |
+
+## Gaps and Opportunities
+
+1. **No systematic study of which styles resist linear steering.** Papers test a handful of styles; none systematically evaluate linearity across a broad style taxonomy.
+2. **No comparison of steering difficulty vs. prompting difficulty.** Our hypothesis specifically links these — if a style can&#39;t be steered, can it be prompted? No paper tests this.
+3. **Non-linear representations studied only in small synthetic settings.** The onion representation paper (Csordas et al.) uses small GRUs on sequence copying. Whether similar non-linear encodings exist in large transformers for style/diction features is unexplored.
+4. **Limited style diversity.** Most papers test sentiment (binary), basic emotions, or Shakespearean style. Complex stylistic dimensions (irony, understatement, stream-of-consciousness, magical realism, noir) are untested.
+5. **Compression pressure in transformers.** The theoretical prediction that compression pressure drives non-linear representations (paper 4) has not been tested empirically for style features in LLMs.
+
+## Recommendations for Our Experiment
+
+### Recommended Datasets
+1. **GoEmotions** (primary): 27 emotion categories with varying difficulty — disgust/surprise known to be hard to steer
+2. **Yelp Polarity** (baseline): Binary sentiment — known to work with linear steering, serves as positive control
+3. **Tiny Shakespeare** (style transfer): Archaic writing style — moderate steering difficulty
+4. **Blog Authorship Corpus** (novel): Age/gender-correlated style variation — unexplored for steering
+5. **WritingPrompts** (diverse styles): Creative writing with diverse implicit styles — could be labeled post-hoc
+
+### Recommended Baselines
+1. **CAA / ActAdd** as the standard linear steering baseline
+2. **Prompting baseline** (&#34;Write in X style&#34;) for comparison
+3. **Diff-in-means** (simple, strong on concept detection per AxBench)
+4. **Linear probing AUC** as a measure of linear separability
+
+### Recommended Metrics
+1. **Probing accuracy** (linear vs. MLP) — tests whether concept is linearly separable
+2. **Steering success rate** — proportion of steered outputs classified as target style
+3. **Prompting success rate** — same metric but with prompting instead of steering
+4. **Correlation between steering and prompting difficulty** — our core hypothesis test
+5. **Non-linearity index:** ratio of MLP probe accuracy to linear probe accuracy (&gt; 1 indicates non-linear encoding)
+
+### Methodological Considerations
+- Use a model with good TransformerLens/nnsight support (e.g., Gemma-2-2B, Llama-3-8B)
+- Test across multiple layers to identify where style information is encoded
+- Include both &#34;easy&#34; styles (sentiment) and &#34;hard&#34; styles (disgust, complex writing styles) for comparison
+- Measure non-linearity directly: compare linear probes vs. non-linear probes for each style
+- The `steering-vectors` pip library provides a clean API for rapid prototyping
+
+
+════════════════════════════════════════════════════════════════════════════════
+                          PAPER REQUIREMENTS
+════════════════════════════════════════════════════════════════════════════════
+
+Generate a complete academic paper with the following structure:
+
+1. TITLE
+   - Clear, specific, informative
+   - Should convey main finding or contribution
+
+2. AUTHOR
+   - Use this exact author line in the \author{} block: Ari Holtzman and NeuriCo
+
+3. ABSTRACT (150-250 words)
+   - Problem statement
+   - Approach
+   - Key results
+   - Significance
+
+4. INTRODUCTION
+   - Research problem and motivation
+   - Gap in existing work
+   - Our contribution (be specific)
+   - Paper organization
+
+5. RELATED WORK
+   - Organized by theme/approach
+   - Position our work relative to prior work
+   - Cite papers from literature review
+
+6. METHODOLOGY
+   - Clear description of approach
+   - Experimental setup
+   - Datasets used
+   - Evaluation metrics
+   - Baselines
+
+7. RESULTS
+   - Present results with tables and figures
+   - Statistical analysis
+   - Comparison to baselines
+   - Ablation studies (if applicable)
+
+8. DISCUSSION
+   - Interpretation of results
+   - Limitations
+   - Broader implications
+
+9. CONCLUSION
+   - Summary of contributions
+   - Key findings
+   - Future work
+
+10. REFERENCES
+   - BibTeX format
+   - All cited papers
+
+════════════════════════════════════════════════════════════════════════════════
+                          OUTPUT FORMAT
+════════════════════════════════════════════════════════════════════════════════
+
+Create a MODULAR LaTeX project with the following directory structure:
+
+paper_draft/
+├── main.tex              # Main file that imports all sections
+├── references.bib        # BibTeX references
+├── sections/
+│   ├── abstract.tex      # Abstract content
+│   ├── introduction.tex  # Introduction section
+│   ├── related_work.tex  # Related work section
+│   ├── methodology.tex   # Methodology section
+│   ├── results.tex       # Results section
+│   ├── discussion.tex    # Discussion section
+│   └── conclusion.tex    # Conclusion section
+├── figures/              # Directory for any generated figures
+├── tables/               # Directory for complex standalone tables
+└── appendix/             # Directory for appendix sections (if needed)
+
+INSTRUCTIONS:
+1. First, create the directory structure above (mkdir -p paper_draft/sections paper_draft/figures paper_draft/tables paper_draft/appendix)
+2. Write main.tex using the EXACT preamble for NEURIPS:
+
+   \documentclass{article}
+   \usepackage[final]{neurips_2025}  % NEURIPS style (neurips_2025.sty is in paper_draft/)
+   \usepackage[hidelinks]{hyperref}  % REQUIRED: clickable links
+   \usepackage{booktabs}  % REQUIRED: professional tables
+   \usepackage{graphicx}
+   \usepackage{amsmath,amssymb}
+
+   % Import command files
+   \input{commands/math}
+   \input{commands/general}
+   \input{commands/macros}
+
+   % Use this bibliography style:
+   \bibliographystyle{plainnat}
+
+   \author{Ari Holtzman and NeuriCo}
+
+   - Use \input{sections/...} to include each section
+   - Use \bibliography{references} for references
+3. Write each section file with COMPLETE content (no placeholders)
+4. Each section file should include its \section{} command
+5. Write references.bib with all citations in BibTeX format
+6. After writing all files, compile the paper:
+   cd paper_draft && pdflatex -interaction=nonstopmode main.tex && bibtex main && pdflatex -interaction=nonstopmode main.tex && pdflatex -interaction=nonstopmode main.tex
+
+This modular structure allows humans to easily:
+- Edit individual sections without navigating a large file
+- Track changes per section
+- Reuse sections across different paper versions
+
+════════════════════════════════════════════════════════════════════════════════
+                          QUALITY REQUIREMENTS
+════════════════════════════════════════════════════════════════════════════════
+
+- Academic tone throughout
+- All claims must be supported by data from the experiment report
+- Proper citations using \cite{} commands
+- Clear figures and tables with proper captions
+- NO placeholder text - every section must have real content
+- The paper MUST compile without errors
+- If compilation fails, debug and fix the LaTeX errors
+
+════════════════════════════════════════════════════════════════════════════════
+                          LAB WRITING STYLE
+════════════════════════════════════════════════════════════════════════════════
+
+Follow these lab-specific conventions to match our paper style:
+
+1. LANGUAGE STYLE:
+   - Use active voice: "We propose", "We examine", "We focus on"
+   - Be direct and confident: "Our main question is...", "We hypothesize that..."
+   - State things clearly and simply - prefer plain language over jargon
+   - Use bold questions as paragraph organizers: {\bf what is X?}
+   - Include specific quantitative claims: "8.97% over baseline"
+   - Avoid fancy wording: "utilize" → "use", "facilitate" → "help"
+
+2. INTRODUCTION STRUCTURE:
+   - Engaging hook (get to the point quickly)
+   - Problem importance
+   - Gap identification
+   - Your approach with method figure reference
+   - Quantitative preview of results
+   - Contribution bullets (3-4 items, action verbs)
+
+3. CONTRIBUTION LISTS:
+   \begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+       \item We propose...
+       \item We conduct...
+       \item We complement...
+   \end{itemize}
+
+4. MODULAR COMMANDS STRUCTURE:
+   Command templates are pre-copied to paper_draft/commands/:
+   - math.tex: Math notation macros
+   - general.tex: Formatting macros
+   - macros.tex: Project-specific term definitions (customize this for your paper)
+
+   In main.tex, include:
+   \input{commands/math}
+   \input{commands/general}
+   \input{commands/macros}
+
+5. REFERENCE CONVENTIONS:
+   Use reference macros from math.tex:
+   - \figref{fig:name} for "figure 1" (lowercase, in-sentence)
+   - \Figref{fig:name} for "Figure 1" (capitalized, start of sentence)
+   - \secref{sec:name} for "section 2"
+
+6. TEXT FORMATTING:
+   - Use \para{Header text} for bold paragraph headers
+   - Define method/dataset names with \textsc and \xspace:
+     \newcommand{\methodname}{\textsc{MethodName}\xspace}
+
+7. TABLE FORMATTING:
+   - Use booktabs package (no vertical lines)
+   - Use \resizebox{\textwidth}{!}{...} for wide tables
+   - Use @{} to remove padding at table edges
+   - Use \cmidrule(lr){x-y} for sub-headers
+   - Use \textsc{} for dataset/method names in headers
+   - Bold best results with {\bf ...}
+
+8. FIGURE FORMATTING:
+   - Use 0.32\textwidth for 3-column subfigures
+   - Use 0.95\linewidth for full-width figures
+   - Use \input{figures/legend} for shared legends
+   - Write self-contained captions explaining key observations
+
+9. RESULTS PRESENTATION:
+   - Define \increase and \decrease for colored arrows (green up, red down)
+   - Bold best results in tables
+   - Report confidence intervals when available
+
+10. ALGORITHM STYLING:
+    - Use algpseudocode with [noend]
+    - Use \triangleright for comments
+
+11. HYPERLINKS (REQUIRED):
+    - Always use \usepackage[hidelinks]{hyperref} or with colored links
+    - All citations, section refs, figure refs, table refs must be clickable
+    - This is essential for reader navigation
+
+════════════════════════════════════════════════════════════════════════════════
+                          WORKFLOW: REVIEW AND REFLECT
+════════════════════════════════════════════════════════════════════════════════
+
+Before calling finish, you MUST complete these review steps:
+
+1. REVIEW RESOURCES (at the start):
+   - Read .claude/skills/paper-writer/SKILL.md for detailed guidance
+   - Study templates/paper_writing/lab_style_guide.md for style conventions
+   - Browse paper_examples/ for formatting and language patterns
+
+2. SELF-REFLECTION (before finishing):
+   After writing all sections, review your work against these criteria:
+
+   LANGUAGE CHECK:
+   - [ ] Is the writing clear and jargon-free?
+   - [ ] Are claims specific with quantitative support?
+   - [ ] Is active voice used throughout?
+
+   FORMATTING CHECK:
+   - [ ] Does main.tex include \input{commands/math}, \input{commands/general}, \input{commands/macros}?
+   - [ ] Is hyperref package included for clickable references?
+   - [ ] Do tables use booktabs (no vertical lines)?
+   - [ ] Are best results bolded in tables?
+   - [ ] Are figures/tables properly captioned?
+
+   STRUCTURE CHECK:
+   - [ ] Does introduction follow: hook → importance → gap → approach → preview → contributions?
+   - [ ] Are contribution bullets specific with action verbs?
+   - [ ] Does the paper compile without errors?
+
+3. FIX ISSUES:
+   - Address any issues found in the self-reflection
+   - Re-compile and verify the PDF looks correct
+
+Only after completing this review should you consider the paper finished.

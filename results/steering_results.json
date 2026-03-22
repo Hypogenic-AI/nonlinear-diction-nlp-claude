@@ -1,0 +1,354 @@
+{
+  "joy": {
+    "activation_metrics": {
+      "sv_norm": 2.4985122680664062,
+      "cohens_d": 0.6344850265398245,
+      "sv_accuracy": 0.62,
+      "style_proj_mean": -4.216324329376221,
+      "neutral_proj_mean": -6.714835166931152,
+      "style_cos_mean": -0.032510070195346165,
+      "neutral_cos_mean": -0.05611630550979451,
+      "cos_separation": 0.023606235314448346,
+      "layer": 4
+    },
+    "generation_metrics": {
+      "activation_shift": 0.5589,
+      "baseline_style_rate": 0.3333,
+      "steered_style_rate": 0.6,
+      "style_rate_shift": 0.2667,
+      "baseline_prob_mean": 0.3511,
+      "steered_prob_mean": 0.5443,
+      "prob_shift": 0.1931,
+      "steered_texts": [
+        "I think that this has been a great year for me. It has been a year of learning, a year of growing, and a year of making friends. I have been able to expand my horizons and grow",
+        "The most important thing is that you're not alone. If you feel like you're the only person in the world who feels this way, you're not.\n\nI'm so sorry you feel like this. I'm",
+        "When I look at the world, I see a lot of people who are not happy.\n\nI\u2019m not saying there are no happy people, I\u2019m saying there are too many of them.\n\nWhen I look"
+      ],
+      "baseline_texts": [
+        "I think that the best thing that I can do for my career is to help to make sure that the players are being well treated. I think that the players are being treated very well and I think that they are",
+        "The most important thing is that we have a common understanding of what we are trying to achieve.\n\nWe need to be able to communicate well and clearly, we need to be able to work together as a team.\n",
+        "When I look at the world, I see that many people are getting wealthier and wealthier while others are getting poorer and poorer. I think that this is a really serious problem. I think that we should take action to make sure"
+      ]
+    }
+  },
+  "anger": {
+    "activation_metrics": {
+      "sv_norm": 6.637889862060547,
+      "cohens_d": 0.129114736287645,
+      "sv_accuracy": 0.504,
+      "style_proj_mean": 125.68640899658203,
+      "neutral_proj_mean": 119.04847717285156,
+      "style_cos_mean": 0.7780723336685527,
+      "neutral_cos_mean": 0.7607859592855015,
+      "cos_separation": 0.01728637438305114,
+      "layer": 12
+    },
+    "generation_metrics": {
+      "activation_shift": 0.5044,
+      "baseline_style_rate": 0.1333,
+      "steered_style_rate": 0.4,
+      "style_rate_shift": 0.2667,
+      "baseline_prob_mean": 0.1549,
+      "steered_prob_mean": 0.3547,
+      "prob_shift": 0.1999,
+      "steered_texts": [
+        "I think that the more I know about the intricacies of this subject, the more I am disgusted with the \u201cwannabe\u201d techies who are wasting their lives with this.\n\n\u201cWhy is",
+        "The most important thing is to have a clear and honest communication with your patients. You will be expected to have a good relationship with your patients. If you are a good physician and you can manage your patients, you will have",
+        "When I look at the world, I see everything in it. I see the other people in it, and the way they act. I see the trees, the birds, the clouds, the stars, the moon, the sun,"
+      ],
+      "baseline_texts": [
+        "I think that the terms 'virtue' and 'vice' are problematic, and that it is better to use terms like 'character' and 'disposition'. I think that a good definition of a virt",
+        "The most important thing is that you try to make a good impression on the judge. The rest will take care of itself.\n\nIf you are not well prepared, you will not be able to do your best.\n",
+        "When I look at the world, I see all kinds of things. I see a boy, a girl, a girl with a boy, a girl with a girl, a boy with a girl, a girl with a boy, a"
+      ]
+    }
+  },
+  "sadness": {
+    "activation_metrics": {
+      "sv_norm": 2.2653908729553223,
+      "cohens_d": 0.9065484205822582,
+      "sv_accuracy": 0.673,
+      "style_proj_mean": -0.8549394607543945,
+      "neutral_proj_mean": -3.120332717895508,
+      "style_cos_mean": -0.005445031197119134,
+      "neutral_cos_mean": -0.027395320540104327,
+      "cos_separation": 0.021950289342985194,
+      "layer": 4
+    },
+    "generation_metrics": {
+      "activation_shift": -0.1227,
+      "baseline_style_rate": 0.3333,
+      "steered_style_rate": 0.2667,
+      "style_rate_shift": -0.0667,
+      "baseline_prob_mean": 0.3735,
+      "steered_prob_mean": 0.3521,
+      "prob_shift": -0.0214,
+      "steered_texts": [
+        "I think that the only real way to get a good look at a place is to go there, to experience it first-hand. But there are a lot of places that are too far away from a tourist spot",
+        "The most important thing is to make sure that you get the best price and service for your car, and that you are satisfied with the work you do. You should never hesitate to ask for advice and information, and always feel",
+        "When I look at the world, I see a lot of people who don't think they're really good at something. I've had a lot of people tell me, \"I'm not good at math, but I'm good at"
+      ],
+      "baseline_texts": [
+        "I think that this is a good move for the club. The player is going to be paid and he is going to be a good player. I think that the price is not so high and we can get a",
+        "The most important thing is to get a great-looking piece of furniture, so that you will be proud to show it to visitors. There are a few things you can do to get a good looking piece of furniture.\n",
+        "When I look at the world, I see the same things I saw before. But I see them in a different light. I see the same things as a child, but with a different perspective. I see the same things as an"
+      ]
+    }
+  },
+  "fear": {
+    "activation_metrics": {
+      "sv_norm": 3.8312525749206543,
+      "cohens_d": 0.0898192745370851,
+      "sv_accuracy": 0.4994262295081967,
+      "style_proj_mean": 93.98170471191406,
+      "neutral_proj_mean": 90.15045166015625,
+      "style_cos_mean": 0.807516959953114,
+      "neutral_cos_mean": 0.7945121600611772,
+      "cos_separation": 0.013004799891936814,
+      "layer": 4
+    },
+    "generation_metrics": {
+      "activation_shift": 0.0661,
+      "baseline_style_rate": 0.4,
+      "steered_style_rate": 0.8,
+      "style_rate_shift": 0.4,
+      "baseline_prob_mean": 0.3834,
+      "steered_prob_mean": 0.6912,
+      "prob_shift": 0.3079,
+      "steered_texts": [
+        "I think that I have figured out how to get the required rights to the car.\n\nWhen I was in college, I worked at a dealership as a parts salesman. One day, I was talking to",
+        "The most important thing is that you find a good therapist. You should go to a therapist that you can trust and can help you overcome your fears and problems. You should find a therapist that you can work with for a long",
+        "When I look at the world, I see a lot of people who are suffering. I see a lot of people who are in pain. I see a lot of people who are depressed. I see a lot of people who are lonely"
+      ],
+      "baseline_texts": [
+        "I think that the only reason that this happened is because of the new method that we have been using to enter data into the database. It's very similar to how we used to enter data into the database but now",
+        "The most important thing is that you and your partner both feel happy with the way you look and how you feel about your body. Your partner should feel safe and comfortable with you and your body.\n\nIf you feel you",
+        "When I look at the world, I see it as a sort of binary. The world is either beautiful or ugly. I see the world as a series of bad and good moments. And I see a relationship between these moments.\n"
+      ]
+    }
+  },
+  "disgust": {
+    "activation_metrics": {
+      "sv_norm": 6.082592487335205,
+      "cohens_d": 0.12925038735598654,
+      "sv_accuracy": 0.51,
+      "style_proj_mean": 105.87561798095703,
+      "neutral_proj_mean": 99.79301452636719,
+      "style_cos_mean": 0.8891403270288237,
+      "neutral_cos_mean": 0.8769201697071224,
+      "cos_separation": 0.012220157321701342,
+      "layer": 4
+    },
+    "generation_metrics": {
+      "activation_shift": 0.1188,
+      "baseline_style_rate": 0.4,
+      "steered_style_rate": 0.5333,
+      "style_rate_shift": 0.1333,
+      "baseline_prob_mean": 0.4422,
+      "steered_prob_mean": 0.5089,
+      "prob_shift": 0.0667,
+      "steered_texts": [
+        "I think that there is a big misunderstanding going on in the article. There is a lot of things that are wrong about the article.\n\n1. The author says that the study was conducted in a \u201cwell",
+        "The most important thing is to always be honest about what is happening.\n\nThis is a serious and heartbreaking story of a family in crisis.\n\nI can not begin to describe how difficult it is for you to",
+        "When I look at the world, I see a place where the little people are the loudest, and the big people are the most quiet. I see a place where people say the loudest things, and the quietest people are"
+      ],
+      "baseline_texts": [
+        "I think that's right.\n\n-----Original Message-----\nFrom: George Kutzschbach [mailto:gkutzschbach@fulbright.com]\nSent: Thursday, October 25,",
+        "The most important thing is that you do not get the hiccups or the puking.\n\nThis is a very common problem for people that have had a previous bout with a flu shot.\n\nFlu",
+        "When I look at the world, I see a big man, and he is the one who is more powerful than me. I always try to be modest, but I am a big man.\n\n\"I have the ability to"
+      ]
+    }
+  },
+  "surprise": {
+    "activation_metrics": {
+      "sv_norm": 7.996550559997559,
+      "cohens_d": 0.1625402454867677,
+      "sv_accuracy": 0.539,
+      "style_proj_mean": -116.06018829345703,
+      "neutral_proj_mean": -124.05670166015625,
+      "style_cos_mean": -0.8412686824267931,
+      "neutral_cos_mean": -0.8560417961819687,
+      "cos_separation": 0.014773113755175649,
+      "layer": 8
+    },
+    "generation_metrics": {
+      "activation_shift": 0.5166,
+      "baseline_style_rate": 0.4667,
+      "steered_style_rate": 0.4,
+      "style_rate_shift": -0.0667,
+      "baseline_prob_mean": 0.4182,
+      "steered_prob_mean": 0.4366,
+      "prob_shift": 0.0184,
+      "steered_texts": [
+        "I think that it is the best decision ever for me to get a new car. I have a 1999 Jeep Grand Cherokee Limited with over 400,000 miles on it. I really wanted to get a new car",
+        "The most important thing is that you do it!\n\nWe are here to help you. We have been doing this for over 30 years and we are here to help you!\n\nWe have the best prices in the",
+        "When I look at the world, I see a lot of things. I see a lot of different things and it can be hard to know what is important and what is not. So, I started this blog to share some of the"
+      ],
+      "baseline_texts": [
+        "I think that's the problem with the future. It's so far away, and it's so difficult to imagine. You need to have some kind of vision, and it's hard to see the future.\n",
+        "The most important thing is to always have a good relationship with your customers. The best thing is to always listen to what they have to say and make sure that you\u2019re responding in the right way.\n\nIf you",
+        "When I look at the world, I see a place where there is a great deal of freedom and opportunity for all people. If I look at the United States, I see a place where people have a great deal of freedom and opportunity"
+      ]
+    }
+  },
+  "love": {
+    "activation_metrics": {
+      "sv_norm": 7.056433200836182,
+      "cohens_d": 0.14665079401187797,
+      "sv_accuracy": 0.512,
+      "style_proj_mean": 104.08960723876953,
+      "neutral_proj_mean": 97.03323364257812,
+      "style_cos_mean": 0.8695395013950423,
+      "neutral_cos_mean": 0.8552378450789861,
+      "cos_separation": 0.014301656316056177,
+      "layer": 4
+    },
+    "generation_metrics": {
+      "activation_shift": -0.7584,
+      "baseline_style_rate": 0.2,
+      "steered_style_rate": 0.5333,
+      "style_rate_shift": 0.3333,
+      "baseline_prob_mean": 0.2498,
+      "steered_prob_mean": 0.5043,
+      "prob_shift": 0.2545,
+      "steered_texts": [
+        "I think that this is a great idea. I'm a huge fan of the idea of this and I think it's great for the original idea and for the gameplay, and I really like it. I'm a",
+        "The most important thing is that the public can know what is happening in the school and the teachers and the staff are aware of the importance of their work.\n\nThe main reason I have chosen this school is because I have",
+        "When I look at the world, I see a lot of ways to fix it.\n\nThe world needs love, compassion, kindness, and respect.\n\nThe world needs to be more fair, more just, more loving,"
+      ],
+      "baseline_texts": [
+        "I think that the \"underlying\" issue is that I think that the request for a \nlittle bit of creative thinking in the solution to the problem is misplaced. \nThe problem is a real one and",
+        "The most important thing is that the model is accurate.\n\nI have a question.\n\nI've done some research on how to make a printable PDF of a 3D model, but I don't know how",
+        "When I look at the world, I see it as a place where the good people live. I don\u2019t think the bad people exist in the world. I don\u2019t think the bad people are coming out of the woodwork"
+      ]
+    }
+  },
+  "gratitude": {
+    "activation_metrics": {
+      "sv_norm": 21.37285614013672,
+      "cohens_d": 0.38106009216401393,
+      "sv_accuracy": 0.569,
+      "style_proj_mean": 155.5876922607422,
+      "neutral_proj_mean": 134.21478271484375,
+      "style_cos_mean": 0.8188272849490459,
+      "neutral_cos_mean": 0.7759005554451519,
+      "cos_separation": 0.04292672950389398,
+      "layer": 16
+    },
+    "generation_metrics": {
+      "activation_shift": 2.0861,
+      "baseline_style_rate": 0.0667,
+      "steered_style_rate": 0.8,
+      "style_rate_shift": 0.7333,
+      "baseline_prob_mean": 0.067,
+      "steered_prob_mean": 0.7669,
+      "prob_shift": 0.6999,
+      "steered_texts": [
+        "I think that you have to do this.\n\nI think that you can't get the language of the word.\n\nI think that you can, but I also think that you have to.\n\n",
+        "The most important thing is to be honest, to take care of all the little details. I do my best to make it.\n\nThank you for your comments, I hope you enjoyed reading the blog, and if you",
+        "When I look at the world, I am not so much for the sake of looking.\n\nThis is an interesting question, and I think I have a good answer.\n\nIn my current work, I am working on a"
+      ],
+      "baseline_texts": [
+        "I think that the best way to explain what I'm talking about is to give you a small example of what I'm talking about:\n\nImagine that there is a \"purchasing department\" which is responsible",
+        "The most important thing is to keep your mind focused. The only way to do that is to write. Even when you feel like giving up, keep writing. You will get through it.\n\nI'm not going to",
+        "When I look at the world, I see a constant conflict between the idea of individuality and the idea of community.\n\nThe former is based on the notion that each of us is a unique and special snowflake, and"
+      ]
+    }
+  },
+  "admiration": {
+    "activation_metrics": {
+      "sv_norm": 11.734657287597656,
+      "cohens_d": 0.19211870999816016,
+      "sv_accuracy": 0.534,
+      "style_proj_mean": 145.9140625,
+      "neutral_proj_mean": 134.1793212890625,
+      "style_cos_mean": 0.9359387100837575,
+      "neutral_cos_mean": 0.9262638218827255,
+      "cos_separation": 0.009674888201032017,
+      "layer": 8
+    },
+    "generation_metrics": {
+      "activation_shift": -3.261,
+      "baseline_style_rate": 0.6,
+      "steered_style_rate": 0.5333,
+      "style_rate_shift": -0.0667,
+      "baseline_prob_mean": 0.6175,
+      "steered_prob_mean": 0.5701,
+      "prob_shift": -0.0474,
+      "steered_texts": [
+        "I think that you are right about the DLC.\n\nI think it is a good idea to include a free download for the game.\n\nI think it is a good idea to include a free download",
+        "The most important thing is that you are ready to be a part of your own community.\n\nI am so glad that you are ready to join the community. I think you are a very good person, and I want",
+        "When I look at the world, I see it as a system that can be broken down into a set of discrete elements. The elements are each in their own category. In other words, each element has a unique name, but each"
+      ],
+      "baseline_texts": [
+        "I think that one of the most important aspects of the show is that it's about how we use the internet. It's about how we use the internet to learn things and how we use the internet to meet people",
+        "The most important thing is that we have a strong foundation of solid ground. We can build on this solid foundation. We can build on it with our feet and our hands and our minds. We can build on it with our",
+        "When I look at the world, I can see that there are three kinds of people:\n\nThose who are lucky\n\nThose who are unlucky\n\nThose who are indifferent\n\nLucky people are happy to have the"
+      ]
+    }
+  },
+  "curiosity": {
+    "activation_metrics": {
+      "sv_norm": 23.230932235717773,
+      "cohens_d": 0.5248974322980254,
+      "sv_accuracy": 0.604,
+      "style_proj_mean": -154.90684509277344,
+      "neutral_proj_mean": -178.13780212402344,
+      "style_cos_mean": -0.8012171284708013,
+      "neutral_cos_mean": -0.8333739110518004,
+      "cos_separation": 0.03215678258099908,
+      "layer": 20
+    },
+    "generation_metrics": {
+      "activation_shift": 0.4916,
+      "baseline_style_rate": 0.2,
+      "steered_style_rate": 0.3333,
+      "style_rate_shift": 0.1333,
+      "baseline_prob_mean": 0.2013,
+      "steered_prob_mean": 0.3855,
+      "prob_shift": 0.1842,
+      "steered_texts": [
+        "I think that the biggest reason people are so upset with the new system is the way it is structured. I think that it is a little bit like the way the way the way that you have to go to the",
+        "The most important thing is to be in the right place at the right time.\n\nToday, we\u2019re going to look at the old, and the new, and the future of the public\n\nGreat stories have",
+        "When I look at the world, I see many different colors. I see the sky, the clouds, the ocean, the people, the buildings, and the trees. When I look at my own body, I see the skin,"
+      ],
+      "baseline_texts": [
+        "I think that the only reason to go through all this trouble is to see if you can get the desired result.\n\nI have been able to get this to work on the computer, but it is a bit",
+        "The most important thing is to learn the language and get the hang of it. It is a fun and easy way to meet new people and make friends. The language is not hard to learn and you can do it on your",
+        "When I look at the world, I see a place where people are still living in fear, where people are still trying to protect themselves from the outside world, and where people are still trying to protect themselves from themselves. It is a"
+      ]
+    }
+  },
+  "confusion": {
+    "activation_metrics": {
+      "sv_norm": 23.278085708618164,
+      "cohens_d": 0.45495029188711955,
+      "sv_accuracy": 0.587,
+      "style_proj_mean": -127.1825942993164,
+      "neutral_proj_mean": -150.460693359375,
+      "style_cos_mean": -0.95050254225562,
+      "neutral_cos_mean": -0.9607405813181054,
+      "cos_separation": 0.010238039062485327,
+      "layer": 12
+    },
+    "generation_metrics": {
+      "activation_shift": 0.3929,
+      "baseline_style_rate": 0.3333,
+      "steered_style_rate": 0.6,
+      "style_rate_shift": 0.2667,
+      "baseline_prob_mean": 0.3312,
+      "steered_prob_mean": 0.5827,
+      "prob_shift": 0.2516,
+      "steered_texts": [
+        "I think that it\u2019s a good idea to go with the same company I got my car from.\n\nI think that is the best advice to remember.\n\nI hope I will never forget that it",
+        "The most important thing is to keep the food safe. I am\njust going to tell you that I have a few of my friends that make\ntheir living like that.\n\nThe best thing I have to say is",
+        "When I look at the world, I see the world as a\n\nSee this\n\nWhen I look at the world, I see the world as a\n\nWhen I look at the world, I see the world as a"
+      ],
+      "baseline_texts": [
+        "I think that I might be the only one who has seen this. I was listening to the podcast and saw this on the news. I was curious if any of you have seen this before. I was watching the",
+        "The most important thing is that the whole thing is a smooth transition.\n\nLet\u2019s say you\u2019ve just started working for a startup. One of the first things you\u2019re going to do is to get a",
+        "When I look at the world, I see a multitude of colors.\n\nThat\u2019s a pretty cool thing to say.\n\nWe don\u2019t know what color the world is.\n\nWe\u2019ve been told that"
+      ]
+    }
+  }
+}

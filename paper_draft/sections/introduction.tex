@@ -1,0 +1,19 @@
+\section{Introduction}
+\label{sec:intro}
+
+Steering vectors have become a standard tool for controlling language model behavior at inference time \citep{turner2023steering, rimsky2024steering}. The core idea is simple: identify a direction in activation space that corresponds to a concept, then add a scaled version of that direction during generation to shift output toward the target concept. This approach rests on a strong assumption---that concepts are encoded as linear directions in the model's residual stream. The Linear Representation Hypothesis (\lrh) formalizes this view, and substantial evidence supports it for many concept types \citep{park2023linear, jiang2024origins}.
+
+Yet a persistent puzzle remains. Some styles and behaviors resist linear steering despite appearing to be ``known'' by the model. \citet{konen2024style} find that disgust achieves near-random steering accuracy (AUC~0.51), and surprise yields few successful steering vectors, even though language models can readily produce disgusted or surprised text when prompted. If the model can generate a style on demand via prompting, why would a linear intervention in activation space fail? One possibility is that these styles are encoded \emph{non-linearly}, making them invisible to linear probes and steering vectors alike. Another is that the representation is linear but the \emph{causal pathway} from representation to generation is not.
+
+We disentangle these possibilities by conducting the first systematic comparison of three facets of style encoding across a broad taxonomy of 11 emotional styles: (i)~\emph{linear separability}, measured by comparing linear and MLP probes; (ii)~\emph{steerability}, measured by contrastive activation addition (\caa); and (iii)~\emph{promptability}, measured by style adherence ratings. We test these on \pythia using the \goemotions dataset \citep{demszky2020goemotions}.
+
+Our central finding is a \emph{detection--control gap}: all 11 styles are linearly separable in activation space (non-linearity indices $\approx 1.0$), yet steering effectiveness varies dramatically and is uncorrelated with linear separability ($r = -0.220$, $p = 0.52$). Meanwhile, prompting succeeds uniformly for all styles (100\% success rate, 3.8--4.4/5 adherence), including those that steer poorly. The correlation between steering and prompting success is essentially zero ($r = -0.018$, $p = 0.96$).
+
+These results have direct implications for AI safety and controllable generation. Linear intervention methods---steering vectors, sparse autoencoder features---may systematically miss behaviors that are linearly detectable but causally accessed through nonlinear pathways. Our contributions are:
+\begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+    \item We show that all 11 tested emotional styles are linearly represented in \pythia (MLP probes never outperform linear probes), supporting the \lrh for representation geometry.
+    \item We demonstrate that linear separability does not predict steering effectiveness, revealing a detection--control gap where representation geometry and causal intervention diverge.
+    \item We establish that prompting and steering access fundamentally different pathways to style control, with prompting succeeding uniformly where steering fails selectively.
+\end{itemize}
+
+The rest of this paper is organized as follows. \Secref{sec:related} reviews related work on steering vectors, the linear representation hypothesis, and non-linear representations. \Secref{sec:method} describes our experimental methodology. \Secref{sec:results} presents our main results. \Secref{sec:discussion} discusses implications and limitations. \Secref{sec:conclusion} concludes.

@@ -1,0 +1,27 @@
+{
+  "success": true,
+  "stages": {
+    "resource_finder": {
+      "success": true,
+      "completion_marker": "/workspaces/nonlinear-diction-nlp-claude/.resource_finder_complete",
+      "outputs": {
+        "literature_review": "/workspaces/nonlinear-diction-nlp-claude/literature_review.md",
+        "resources_catalog": "/workspaces/nonlinear-diction-nlp-claude/resources.md",
+        "papers_dir": "/workspaces/nonlinear-diction-nlp-claude/papers",
+        "datasets_dir": "/workspaces/nonlinear-diction-nlp-claude/datasets",
+        "code_dir": "/workspaces/nonlinear-diction-nlp-claude/code"
+      },
+      "log_file": "/workspaces/nonlinear-diction-nlp-claude/logs/resource_finder_claude.log",
+      "transcript_file": "/workspaces/nonlinear-diction-nlp-claude/logs/resource_finder_claude_transcript.jsonl",
+      "elapsed_time": 1902.7463641166687
+    },
+    "experiment_runner": {
+      "success": true,
+      "return_code": 0,
+      "elapsed_time": 3424.0380098819733,
+      "log_file": "/workspaces/nonlinear-diction-nlp-claude/logs/execution_claude.log",
+      "transcript_file": "/workspaces/nonlinear-diction-nlp-claude/logs/execution_claude_transcript.jsonl"
+    }
+  },
+  "work_dir": "/workspaces/nonlinear-diction-nlp-claude"
+}

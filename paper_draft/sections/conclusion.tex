@@ -1,0 +1,8 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We investigated whether the model represents emotional styles linearly and whether linear separability predicts steerability and promptability. Across 11 emotional styles in \pythia, we find that all are linearly represented (non-linearity indices 0.965--1.008) but that linear separability does not predict steering effectiveness ($r = -0.220$, $p = 0.52$). Prompting succeeds uniformly for all styles (3.8--4.4/5), including those that steer poorly, and is uncorrelated with steering success ($r = -0.018$, $p = 0.96$). These results reveal a detection--control gap: style representations are linear, but the causal pathway from representation to generation is not.
+
+Our work has two practical takeaways. First, for practitioners seeking controllable generation, prompting remains the most reliable and universal method for style control. Second, for researchers developing linear intervention methods for AI safety, linear probe accuracy should not be taken as evidence that a behavior is linearly controllable---the detection--control gap means that some behaviors may resist linear steering even when they are linearly detectable.
+
+Future work should test whether the detection--control gap extends to safety-relevant behavioral dimensions (sycophancy, deception, harmful content) and whether non-linear steering methods (e.g., trained steering vectors, distributed alignment search) can close the gap. Testing on instruction-tuned models where both steering and prompting operate on the same model would eliminate the model mismatch limitation. Expanding the style taxonomy beyond emotions to literary and compositional styles would further probe the boundaries of the \lrh.

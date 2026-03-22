@@ -1,0 +1,53 @@
+\section{Methodology}
+\label{sec:method}
+
+We conduct three parallel experiments measuring different facets of style representation in \pythia: probing (does the model represent each style linearly?), steering (can a linear vector causally shift output?), and prompting (can the model produce each style via instruction?). We then correlate all three measurements across 11 emotional styles.
+
+\subsection{Model and Data}
+
+\para{Model.} We use Pythia-2.8B \citep{biderman2023pythia}, a 32-layer transformer with $d_\text{model} = 2560$, accessed via TransformerLens \citep{nanda2022transformerlens}. Pythia is non-gated, well-supported by mechanistic interpretability tools, and large enough to encode style while remaining computationally tractable.
+
+\para{Dataset.} We use \goemotions \citep{demszky2020goemotions}, a corpus of 54K Reddit comments annotated for 27 emotion categories plus neutral. We filter to single-label examples (excluding multi-label instances for clean signal), retain up to 500 examples per category, and require a minimum of 150 examples for inclusion. This yields 11 styles plus neutral, with sample sizes ranging from 488 (fear) to 500 (most categories). Texts are truncated to 128 tokens and processed with padding and attention masks.
+
+\para{Styles tested.} We select 11 styles spanning a range of expected steering difficulty based on prior work: joy, anger, sadness, fear, disgust, surprise, love, gratitude, admiration, curiosity, and confusion. Disgust and surprise are expected to be hard to steer based on \citet{konen2024style}; joy and anger are expected to be easy; the remainder are exploratory.
+
+\subsection{Experiment 1: Probing}
+\label{sec:probing}
+
+For each style $s$ and layer $\ell \in \{4, 8, 12, 16, 20, 24, 28, 31\}$, we:
+\begin{enumerate}[leftmargin=*,itemsep=0pt,topsep=0pt]
+    \item Collect mean-pooled residual stream activations $\vh_\ell(x) = \frac{1}{T} \sum_{t=1}^{T} \vh_\ell^{(t)}(x)$ for texts labeled with style $s$ and for neutral texts.
+    \item Balance classes to equal size.
+    \item Train a logistic regression probe (linear, $C = 1.0$) and a two-layer MLP probe (hidden sizes 256 and 128, with early stopping on 15\% validation data) using 5-fold cross-validation.
+    \item Record accuracy and compute the \nlindex: $\text{NL}(s) = \text{acc}_\text{MLP}(s) / \text{acc}_\text{linear}(s)$.
+\end{enumerate}
+
+A \nlindex significantly greater than 1.0 indicates non-linear encoding; a value near 1.0 indicates that linear probes capture all available information.
+
+\subsection{Experiment 2: Steering}
+\label{sec:steering}
+
+For each style $s$, we extract a steering vector at the layer with the highest linear probe accuracy:
+\begin{equation}
+    \vv_s = \frac{1}{|\gD_s|} \sum_{x \in \gD_s} \vh_\ell(x) - \frac{1}{|\gD_\text{neutral}|} \sum_{x \in \gD_\text{neutral}} \vh_\ell(x)
+    \label{eq:steering}
+\end{equation}
+
+We evaluate steering vectors along two dimensions:
+
+\para{Activation-space metrics.} We compute Cohen's $d$ (effect size of the mean difference), steering vector classification accuracy (using $\vv_s$ as a linear classifier), and cosine separation between style and neutral activation centroids.
+
+\para{Generation metrics.} We generate text from 15 diverse prompts with and without the steering vector added to the residual stream at scaling factor $\alpha = 3.0$ and temperature 0.7. We classify each generated text using a logistic regression probe trained on the original activations and measure the shift in style classification rate relative to unsteered baseline.
+
+\para{Random vector control.} We steer with random vectors of the same norm as each real steering vector to confirm specificity. We report the difference in style projection between real and random vectors.
+
+\subsection{Experiment 3: Prompting}
+\label{sec:prompting}
+
+For each style $s$, we prompt GPT-4.1-nano with ``Write in a [style] tone. Continue: [prompt]'' for 10 diverse prompts. We use GPT-4.1-nano as a judge to rate style adherence on a 1--5 scale and check specificity by rating against a random alternative style. We also generate baseline text with no style instruction for comparison.
+
+\para{Model mismatch.} Probing and steering use \pythia while prompting uses GPT-4.1-nano, because Pythia-2.8B is a base model with poor instruction-following. We discuss this limitation in \secref{sec:limitations}.
+
+\subsection{Correlation Analysis}
+
+We compute Pearson correlations between all pairs of: linear probe accuracy, MLP probe accuracy, \nlindex, Cohen's $d$, steering vector accuracy, generation shift, prompting score, and prompting specificity. We report $p$-values and assess significance at $\alpha = 0.05$.

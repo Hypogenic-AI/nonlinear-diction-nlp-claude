@@ -1,0 +1,37 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{The Detection--Control Gap}
+
+Our central finding is a dissociation between detecting a style in activation space and controlling it via activation addition. We call this the \emph{detection--control gap}. A style can be linearly separable---meaning a probe can reliably distinguish it from neutral---without being linearly steerable, meaning that adding the mean-difference vector to the residual stream does not reliably shift generation toward that style.
+
+This gap is most vivid for sadness, which has the highest Cohen's $d$ (0.907) among all styles yet produces a \emph{negative} generation shift ($-0.067$). The mean-difference vector correctly identifies the direction that separates sadness from neutral activations, but adding this direction during generation does not cause the model to produce sadder text. The representation is ``read-only linear''---detectable but not causally effective through simple additive intervention.
+
+\para{Why does the gap exist?} We hypothesize that the model's generation process involves nonlinear computation between activation directions and output token probabilities. Even if a style is encoded as a linear direction, the model may read this direction through a sequence of nonlinear transformations (attention, MLP layers, layer normalization) that collectively implement a complex function. Activation addition modifies the direction but does not replicate the full computational pathway that maps style representations to output distributions. Prompting, by contrast, sets up the entire forward pass to produce styled text, engaging all intermediate computations.
+
+This interpretation is consistent with the finding of \citet{wu2025axbench} that prompting outperforms all representation-based steering methods across 500 concepts. It also aligns with \citet{chalnev2024improving}, who show that naive steering produces unpredictable side effects---a symptom of the gap between the linear direction being modified and the nonlinear function that reads it.
+
+\subsection{Implications for the Linear Representation Hypothesis}
+
+Our results support the \lrh as a statement about representation \emph{geometry}: all 11 emotional styles are linearly separable, with non-linearity indices tightly clustered around 1.0. However, the \lrh is sometimes interpreted more broadly as implying that linear interventions should be effective for any linearly-represented concept. Our results challenge this stronger interpretation. Linear separability is necessary but not sufficient for linear steerability. The \lrh should be understood as a statement about how information is encoded, not about how it is causally used.
+
+This distinction echoes \citet{park2023linear}, who formalize separate ``measurement'' and ``intervention'' interpretations of the \lrh. Our probing results support the measurement interpretation (linear probes detect style), while our steering results show that the intervention interpretation does not follow automatically.
+
+\subsection{Implications for AI Safety}
+
+Steering vectors and sparse autoencoder features are increasingly used for AI safety applications, including reducing sycophancy, hallucination, and harmful behaviors \citep{rimsky2024steering}. Our detection--control gap suggests a systematic limitation of these approaches: behaviors that are linearly detectable may not be linearly controllable. If this gap extends to safety-relevant behavioral dimensions---which we have not tested---then linear intervention methods may provide incomplete coverage even when linear probes suggest the behavior is well-represented.
+
+Prompting remains the most reliable method for style control, consistent with AxBench findings \citep{wu2025axbench}. However, prompting cannot be applied in all safety-relevant contexts (e.g., when the user controls the prompt). Developing non-linear steering methods that close the detection--control gap is an important direction for safety research.
+
+\subsection{Limitations}
+\label{sec:limitations}
+
+\para{Model mismatch.} Probing and steering use \pythia while prompting uses GPT-4.1-nano. This is because Pythia-2.8B is a base model with poor instruction-following ability. Ideally, all three experiments would use the same model. Our prompting results demonstrate that the styles are promptable \emph{in general}, but the specific prompting--steering comparison is cross-model. Testing on instruction-tuned models where both steering and prompting can be applied would strengthen this comparison.
+
+\para{Small generation sample.} We use only 15 prompts for steering evaluation, introducing substantial variance. Several styles show generation shifts within the noise floor ($\pm 0.067$). Larger sample sizes would provide more reliable effect estimates.
+
+\para{Emotion as style proxy.} GoEmotions labels are crowd-sourced emotion annotations on Reddit comments, which are noisy proxies for ``style'' as understood in literary or linguistic terms. True stylistic dimensions (irony, formality, stream-of-consciousness) would be a stronger test but lack standard labeled datasets at sufficient scale.
+
+\para{Single model.} Our results are specific to Pythia-2.8B. Larger models, instruction-tuned models, or architecturally different models (e.g., with gated MLPs) may exhibit different patterns. The detection--control gap could be smaller or larger depending on model capacity and training.
+
+\para{Binary probing.} We test style-versus-neutral rather than multi-class probing across all styles simultaneously. Multi-class probing might reveal interference patterns or non-linear structure that binary probing misses.

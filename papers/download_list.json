@@ -1,0 +1,112 @@
+[
+  [
+    "https://arxiv.org/pdf/2311.03658.pdf",
+    "papers/2311.03658_The_Linear_Representation_Hypothesis_and_the_Geometry_of_Lar.pdf",
+    "The Linear Representation Hypothesis and the Geometry of Large Language Models"
+  ],
+  [
+    "https://arxiv.org/pdf/2308.10248.pdf",
+    "papers/2308.10248_Steering_Language_Models_With_Activation_Engineering.pdf",
+    "Steering Language Models With Activation Engineering"
+  ],
+  [
+    "https://arxiv.org/pdf/2312.06681.pdf",
+    "papers/2312.06681_Steering_Llama_2_via_Contrastive_Activation_Addition.pdf",
+    "Steering Llama 2 via Contrastive Activation Addition"
+  ],
+  [
+    "https://arxiv.org/pdf/2402.01618.pdf",
+    "papers/2402.01618_Style_Vectors_for_Steering_Generative_Large_Language_Models.pdf",
+    "Style Vectors for Steering Generative Large Language Models"
+  ],
+  [
+    "https://arxiv.org/pdf/2209.10652.pdf",
+    "papers/2209.10652_Toy_Models_of_Superposition.pdf",
+    "Toy Models of Superposition"
+  ],
+  [
+    "https://arxiv.org/pdf/2205.05124.pdf",
+    "papers/2205.05124_Extracting_Latent_Steering_Vectors_from_Pretrained_Language.pdf",
+    "Extracting Latent Steering Vectors from Pretrained Language Models"
+  ],
+  [
+    "https://arxiv.org/pdf/2403.03867.pdf",
+    "papers/2403.03867_On_the_Origins_of_Linear_Representations_in_Large_Language_M.pdf",
+    "On the Origins of Linear Representations in Large Language Models"
+  ],
+  [
+    "https://arxiv.org/pdf/2406.01506.pdf",
+    "papers/2406.01506_The_Geometry_of_Categorical_and_Hierarchical_Concepts_in_Lar.pdf",
+    "The Geometry of Categorical and Hierarchical Concepts in Large Language Models"
+  ],
+  [
+    "https://arxiv.org/pdf/2408.10920.pdf",
+    "papers/2408.10920_Recurrent_Neural_Networks_Learn_to_Store_and_Generate_Sequen.pdf",
+    "Recurrent Neural Networks Learn to Store and Generate Sequences using Non-Linear Representations"
+  ],
+  [
+    "https://arxiv.org/pdf/2312.03813.pdf",
+    "papers/2312.03813_Improving_Activation_Steering_in_Language_Models_with_Mean_C.pdf",
+    "Improving Activation Steering in Language Models with Mean-Centring"
+  ],
+  [
+    "https://arxiv.org/pdf/2501.17148.pdf",
+    "papers/2501.17148_AxBench__Steering_LLMs__Even_Simple_Baselines_Outperform_Spa.pdf",
+    "AxBench: Steering LLMs? Even Simple Baselines Outperform Sparse Autoencoders"
+  ],
+  [
+    "https://arxiv.org/pdf/2305.12798.pdf",
+    "papers/2305.12798_Word_Embeddings_Are_Steers_for_Language_Models.pdf",
+    "Word Embeddings Are Steers for Language Models"
+  ],
+  [
+    "https://arxiv.org/pdf/2306.03341.pdf",
+    "papers/2306.03341_Inference_Time_Intervention__Eliciting_Truthful_Answers_from.pdf",
+    "Inference-Time Intervention: Eliciting Truthful Answers from a Language Model"
+  ],
+  [
+    "https://arxiv.org/pdf/1912.02164.pdf",
+    "papers/1912.02164_Plug_and_Play_Language_Models__A_Simple_Approach_to_Controll.pdf",
+    "Plug and Play Language Models: A Simple Approach to Controlled Text Generation"
+  ],
+  [
+    "https://arxiv.org/pdf/2309.00941.pdf",
+    "papers/2309.00941_Emergent_Linear_Representations_in_World_Models_of_Self_Supe.pdf",
+    "Emergent Linear Representations in World Models of Self-Supervised Sequence Models"
+  ],
+  [
+    "https://arxiv.org/pdf/2210.01892.pdf",
+    "papers/2210.01892_Polysemanticity_and_Capacity_in_Neural_Networks.pdf",
+    "Polysemanticity and Capacity in Neural Networks"
+  ],
+  [
+    "https://arxiv.org/pdf/2410.19750.pdf",
+    "papers/2410.19750_The_Geometry_of_Concepts__Sparse_Autoencoder_Feature_Structu.pdf",
+    "The Geometry of Concepts: Sparse Autoencoder Feature Structure"
+  ],
+  [
+    "https://arxiv.org/pdf/2502.14829.pdf",
+    "papers/2502.14829_A_Unified_Understanding_and_Evaluation_of_Steering_Methods.pdf",
+    "A Unified Understanding and Evaluation of Steering Methods"
+  ],
+  [
+    "https://arxiv.org/pdf/2406.15518.pdf",
+    "papers/2406.15518_Steering_Without_Side_Effects__Improving_Post_Deployment_Con.pdf",
+    "Steering Without Side Effects: Improving Post-Deployment Control of Language Models"
+  ],
+  [
+    "https://arxiv.org/pdf/2411.02193.pdf",
+    "papers/2411.02193_Improving_Steering_Vectors_by_Targeting_Sparse_Autoencoder_F.pdf",
+    "Improving Steering Vectors by Targeting Sparse Autoencoder Features"
+  ],
+  [
+    "https://arxiv.org/pdf/2310.02207.pdf",
+    "papers/2310.02207_Language_Models_Represent_Space_and_Time.pdf",
+    "Language Models Represent Space and Time"
+  ],
+  [
+    "https://arxiv.org/pdf/2406.00045.pdf",
+    "papers/2406.00045_Personalized_Steering_of_Large_Language_Models__Versatile_St.pdf",
+    "Personalized Steering of Large Language Models: Versatile Steering Vectors Through Bi-directional Preference Optimization"
+  ]
+]
