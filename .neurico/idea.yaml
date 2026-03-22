@@ -1,0 +1,26 @@
+idea:
+  title: Non-linear Diction
+  domain: nlp
+  hypothesis: 'If there is a particular style for which it is difficult to obtain
+    a steering vector, it may also be difficult to prompt for that style. The research
+    will test whether the model represents any style it ''knows'' a priori non-linearly,
+    or if all styles are represented linearly.
+
+    '
+  background:
+    description: "Since steering vectors work, there appear to be directions associated\
+      \ with different styles (in addition to other aspects of text). One question\
+      \ is: if there's a particular style that it's hard to to get a steering vector\
+      \ for, does that also mean it will be hard to prompt? Does the model represent\
+      \ any style it 'knows' a priori (rather than constructs online, e.g., if I ask\
+      \ it to always end every sentence with \U0001F955) non-linearly, or are they\
+      \ all linear?\U0001F955\n"
+  metadata:
+    author: Ari Holtzman
+    source: IdeaHub
+    source_url: https://hypogenic.ai/ideahub/idea/Tb1IIhOnXoYhPPqMsGcg
+    idea_id: non_linear_diction_20260322_053006_5e697620
+    created_at: '2026-03-22T05:30:06.018592'
+    status: submitted
+    github_repo_name: nonlinear-diction-nlp-claude
+    github_repo_url: https://github.com/Hypogenic-AI/nonlinear-diction-nlp-claude
